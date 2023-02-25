@@ -3,11 +3,22 @@ import { Hono } from "hono";
 const app = new Hono();
 
 // ABテスト
-app.get("/ab/page", (c) => {
+app.get("/ab/page", async (c) => {
 	const url = new URL(c.req.url);
 	url.port = "3000";
-	url.pathname = Math.random() < 0.5 ? "/ab/page-a" : "/ab/page-b"; // 特定のユーザのみpage-aに飛ばす
-	return fetch(url, { headers: c.req.headers, body: c.req.body });
+
+	const abPath = c.req.cookie("ab");
+	if (abPath != null) {
+		url.pathname = abPath;
+	} else {
+		url.pathname = Math.random() < 0.5 ? "/ab/page-a" : "/ab/page-b";
+	}
+
+	let res = await fetch(url, { headers: c.req.headers, body: c.req.body });
+	res = res.clone();
+	res.headers.set("Set-Cookie", `ab=${url.pathname}`);
+
+	return res;
 });
 
 app.all("*", (c) => {
