@@ -2,9 +2,16 @@ import { Hono } from "hono";
 
 const app = new Hono();
 
-// 外部サイトにも飛ばせる
-app.get("/example", () => {
-	return fetch("https://example.com");
+// example.comの内容のHTMLを書き換える
+app.get("/example", async () => {
+	const rewriter = new HTMLRewriter().on("h1", {
+		element: (e) => {
+			e.setInnerContent("Test");
+		},
+	});
+
+	const res = await fetch("https://example.com");
+	return rewriter.transform(res);
 });
 
 app.get("/api/cache", async (c) => {
