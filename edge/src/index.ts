@@ -55,6 +55,8 @@ app.get("/ab/page", async (c) => {
 });
 
 app.get("/async", async (c) => {
+	c.executionCtx.passThroughOnException(); // workersで例外が起きた時に、originを見に行く
+
 	const handler: Promise<void> = new Promise(
 		() => fetch("http://localhost:3000/api/busy") // 重い処理
 	);
