@@ -54,6 +54,15 @@ app.get("/ab/page", async (c) => {
 	return res;
 });
 
+app.get("/async", async (c) => {
+	const handler: Promise<void> = new Promise(
+		() => fetch("http://localhost:3000/api/busy") // 重い処理
+	);
+	c.executionCtx.waitUntil(handler);
+
+	return c.text("OK");
+});
+
 app.all("*", (c) => {
 	const url = new URL(c.req.url);
 	url.port = "3000"; // ここで、workersに来たものを、Next.jsに渡している. 8787 -> 3000
