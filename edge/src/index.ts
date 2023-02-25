@@ -2,6 +2,11 @@ import { Hono } from "hono";
 
 const app = new Hono();
 
+// 外部サイトにも飛ばせる
+app.get("/example", () => {
+	return fetch("https://example.com");
+});
+
 // ABテスト
 app.get("/ab/page", async (c) => {
 	const url = new URL(c.req.url);
