@@ -7,6 +7,27 @@ app.get("/example", () => {
 	return fetch("https://example.com");
 });
 
+app.get("/api/cache", async (c) => {
+	const cache = caches.default;
+
+	const cacheRes = await cache.match("http://localhost:3000/api/cache");
+	if (cacheRes) {
+		return cacheRes;
+	}
+
+	let res = await fetch("http://localhost:3000/api/cache", {
+		headers: c.req.headers,
+		body: c.req.body,
+		// cf: { cacheTtl: 30 }, 本番ではこれを使ったりする。使える条件が色いろあるらしい
+	});
+	res = res.clone();
+	res.headers.set("Cache-Control", "s-maxage=30");
+
+	cache.put("http://localhost:3000/api/cache", res.clone());
+
+	return res;
+});
+
 // ABテスト
 app.get("/ab/page", async (c) => {
 	const url = new URL(c.req.url);
